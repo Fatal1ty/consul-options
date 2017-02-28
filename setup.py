@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-from setuptools import setup, find_packages
-
+from setuptools import setup
 
 setup(
     name='lazy-consul',
-    version='0.1.1',
+    version='0.1.2',
     description='Lazy client library for the Consul Key/Value store',
     platforms="all",
     classifiers=[
@@ -13,13 +12,13 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Operating System :: OS Independent',
-        'Topic :: Software Development :: Libraries',
+        'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Clustering',
     ],
     license='MIT',
     author='Alexander Tikhonov',
     url='https://github.com/Fatal1ty/lazy-consul',
-    packages=find_packages(exclude=('tests',)),
+    py_modules=['lazy_consul'],
     install_requires=[
         'python-consul'
     ]
