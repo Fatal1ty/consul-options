@@ -19,14 +19,6 @@ class LazyConsul(consul.base.Consul):
         return LazyHTTPClient(host, port, scheme, verify)
 
 
-class ConsulOptions(object):
-    def __init__(self):
-        self.consul = LazyConsul()
-
-    def setup(self, host, port, scheme):
-        self.consul.http.setup(host, port, scheme)
-
-
 class KeyValue(object):
     def __getter__(self, key):
         raise NotImplementedError
@@ -65,3 +57,27 @@ class ConsulKV(KeyValue):
     def __setter__(self, key, value):
         path = self.__parent__ + '/' + key
         self.__consul__.kv.put(path, str(value))
+
+
+class CachedConsulKV(ConsulKV):
+    def __init__(self, *args, **kwargs):
+        super(CachedConsulKV, self).__init__(*args, **kwargs)
+        self.__cache__ = {}
+
+    def __getter__(self, key):
+        value = self.__cache__.get(key)
+        if not value:
+            value = super(CachedConsulKV, self).__getter__(key)
+            self.__cache__[key] = value
+        return value
+
+
+class ConsulOptions(object):
+    def __init__(self):
+        self.consul = LazyConsul()
+
+    def setup(self, host, port, scheme):
+        self.consul.http.setup(host, port, scheme)
+
+
+consul = ConsulOptions()
