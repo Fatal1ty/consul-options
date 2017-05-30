@@ -46,6 +46,7 @@ class KeyValue(object):
         if value is not None:
             try:
                 default = object.__getattribute__(self, item)
+                value = str(value.decode('utf8'))  # for compatibility
                 return type(default)(value)
             except AttributeError:
                 return value

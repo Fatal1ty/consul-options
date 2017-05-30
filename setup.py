@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='lazy-consul',
-    version='0.3',
+    version='0.4',
     description='Lazy client library for the Consul Key/Value store',
     platforms="all",
     classifiers=[
