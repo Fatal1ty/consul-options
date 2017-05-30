@@ -8,6 +8,7 @@ except ImportError:
 
 import consul.base
 from consul.std import HTTPClient
+from six import with_metaclass
 
 
 class LazyHTTPClient(HTTPClient):
@@ -100,9 +101,7 @@ class ConsulOptionsMeta(type):
         super(ConsulOptionsMeta, cls).__init__(name, bases, clsdict)
 
 
-class ConsulKV(KeyValue):
-    __metaclass__ = ConsulOptionsMeta
-
+class ConsulKV(with_metaclass(ConsulOptionsMeta, KeyValue)):
     def __init__(self, server):
         self.__consul__ = server
 
@@ -120,9 +119,7 @@ class ConsulKV(KeyValue):
         self.__consul__.kv.put(path, str(value))
 
 
-class CachedConsulKV(ConsulKV):
-    __metaclass__ = ConsulOptionsMeta
-
+class CachedConsulKV(with_metaclass(ConsulOptionsMeta, ConsulKV)):
     def __init__(self, *args, **kwargs):
         super(CachedConsulKV, self).__init__(*args, **kwargs)
         self.__cache__ = {}
