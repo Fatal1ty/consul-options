@@ -1,17 +1,28 @@
 # encoding: utf8
 
 from __future__ import absolute_import
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
 
 import consul.base
 from consul.std import HTTPClient
 
 
 class LazyHTTPClient(HTTPClient):
-    def setup(self, host, port, scheme):
-        self.host = host
-        self.port = port
-        self.scheme = scheme
-        self.base_uri = '%s://%s:%s' % (scheme, host, port)
+    def setup(self, url=None, host=None, port=None, scheme=None):
+        if url:
+            o = urlparse(url)
+            self.host = o.hostname
+            self.port = o.port
+            self.scheme = o.scheme
+            self.base_uri = url
+        else:
+            self.host = host
+            self.port = port
+            self.scheme = scheme
+            self.base_uri = '%s://%s:%s' % (scheme, host, port)
 
 
 class LazyConsul(consul.base.Consul):
@@ -27,7 +38,7 @@ class KeyValue(object):
         raise NotImplementedError
 
     def __getattribute__(self, item):
-        if item in ('__getter__', '__setter__') +\
+        if item in ('__getter__', '__setter__', '__path__') +\
                 tuple(object.__getattribute__(self, '__dict__').keys()):
             return object.__getattribute__(self, item)
         value = self.__getter__(item)
@@ -38,28 +49,80 @@ class KeyValue(object):
             except AttributeError:
                 return value
         else:
-            value = object.__getattribute__(self, item)
+            try:
+                value = object.__getattribute__(self, item)
+            except AttributeError:
+                path = self.__path__
+                full_path = '%s/%s' % (path, item) if path else item
+                msg = "There is no such key '%s'" % full_path
+                raise AttributeError(msg)
             self.__setter__(item, value)
             return value
 
+    @property
+    def __path__(self):
+        mro = object.__getattribute__(self, '__class__').mro()
+        path = []
+        for base in mro:
+            if base in (ConsulKV, CachedConsulKV):
+                break
+            else:
+                try:
+                    name = object.__getattribute__(base, '__key__')
+                except AttributeError:
+                    name = base.__name__.lower()
+                path.append(name)
+        return '/'.join(reversed(path))
+
+
+class ConsulOptionsMeta(type):
+    def __init__(cls, name, bases, clsdict):
+        if name not in ('ConsulKV', 'CachedConsulKV'):
+            path = []
+            for c in cls.mro():
+                if c in (ConsulKV, CachedConsulKV):
+                    break
+                else:
+                    path.append(c)
+            po = ConsulOptions.__global__
+            for c in reversed(path):
+                try:
+                    key = object.__getattribute__(c, '__key__')
+                except AttributeError:
+                    key = object.__getattribute__(c, '__name__').lower()
+                try:
+                    o = object.__getattribute__(po, key)
+                except AttributeError:
+                    o = c(ConsulOptions.__global__.__consul__)
+                    object.__setattr__(po, key, o)
+                object.__setattr__(o, '__key__', key)
+                po = o
+        super(ConsulOptionsMeta, cls).__init__(name, bases, clsdict)
+
 
 class ConsulKV(KeyValue):
-    def __init__(self, server, parent=None):
+    __metaclass__ = ConsulOptionsMeta
+
+    def __init__(self, server):
         self.__consul__ = server
-        self.__parent__ = parent.strip('/')
 
     def __getter__(self, key):
-        path = self.__parent__ + '/' + key if self.__parent__ else key
+        path = self.__path__
+        path = path + '/' + key if path else key
         index, data = self.__consul__.kv.get(path)
+        # index, data = None, None
         value = data['Value'] if data else None
         return value
 
     def __setter__(self, key, value):
-        path = self.__parent__ + '/' + key
+        path = self.__path__
+        path = path + '/' + key if path else key
         self.__consul__.kv.put(path, str(value))
 
 
 class CachedConsulKV(ConsulKV):
+    __metaclass__ = ConsulOptionsMeta
+
     def __init__(self, *args, **kwargs):
         super(CachedConsulKV, self).__init__(*args, **kwargs)
         self.__cache__ = {}
@@ -74,10 +137,11 @@ class CachedConsulKV(ConsulKV):
 
 class ConsulOptions(object):
     def __init__(self):
-        self.consul = LazyConsul()
+        self.__consul__ = LazyConsul()
 
-    def setup(self, host, port, scheme):
-        self.consul.http.setup(host, port, scheme)
+    def setup(self, url=None, host=None, port=None, scheme=None):
+        self.__consul__.http.setup(url, host, port, scheme)
 
 
 consul = ConsulOptions()
+ConsulOptions.__global__ = consul
