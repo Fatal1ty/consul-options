@@ -47,7 +47,7 @@ class KeyValue(object):
             try:
                 default = object.__getattribute__(self, item)
                 value = str(value.decode('utf8'))  # for compatibility
-                return type(default)(value)
+                return adapt_value(value, type(default))
             except AttributeError:
                 return value
         else:
@@ -139,6 +139,19 @@ class ConsulOptions(object):
 
     def setup(self, url=None, host=None, port=None, scheme=None):
         self.__consul__.http.setup(url, host, port, scheme)
+
+
+def adapt_value(value, which_type):
+    if which_type == bool:
+        value = str(value).lower()
+        if value == 'true':
+            return True
+        elif value == 'false':
+            return False
+        else:
+            raise ValueError(value)
+    else:
+        return which_type(value)
 
 
 consul = ConsulOptions()
