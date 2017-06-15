@@ -32,6 +32,8 @@ class LazyConsul(consul.base.Consul):
 
 
 class KeyValue(object):
+    __root__ = False
+
     def __getter__(self, key):
         raise NotImplementedError
 
@@ -66,6 +68,8 @@ class KeyValue(object):
         mro = object.__getattribute__(self, '__class__').mro()
         path = []
         for base in mro:
+            if getattr(base, '__root__'):
+                break
             if base in (ConsulKV, CachedConsulKV):
                 break
             else:
@@ -87,18 +91,24 @@ class ConsulOptionsMeta(type):
                 else:
                     path.append(c)
             po = ConsulOptions.__global__
-            for c in reversed(path):
-                try:
-                    key = object.__getattribute__(c, '__key__')
-                except AttributeError:
-                    key = object.__getattribute__(c, '__name__').lower()
-                try:
-                    o = object.__getattribute__(po, key)
-                except AttributeError:
-                    o = c(ConsulOptions.__global__.__consul__)
-                    object.__setattr__(po, key, o)
-                object.__setattr__(o, '__key__', key)
-                po = o
+
+            is_root = getattr(cls, '__root__')
+            if is_root:
+                o = cls(po.__consul__)
+                po.__root_options__.append(o)
+            else:
+                for c in reversed(path):
+                    try:
+                        key = object.__getattribute__(c, '__key__')
+                    except AttributeError:
+                        key = object.__getattribute__(c, '__name__').lower()
+                    try:
+                        o = object.__getattribute__(po, key)
+                    except AttributeError:
+                        o = c(ConsulOptions.__global__.__consul__)
+                        object.__setattr__(po, key, o)
+                    object.__setattr__(o, '__key__', key)
+                    po = o
         super(ConsulOptionsMeta, cls).__init__(name, bases, clsdict)
 
 
@@ -136,9 +146,18 @@ class CachedConsulKV(with_metaclass(ConsulOptionsMeta, ConsulKV)):
 class ConsulOptions(object):
     def __init__(self):
         self.__consul__ = LazyConsul()
+        self.__root_options__ = []
 
-    def setup(self, url=None, host=None, port=None, scheme=None):
-        self.__consul__.http.setup(url, host, port, scheme)
+    def __getattr__(self, key):
+        for root_kv in self.__root_options__:
+            try:
+                value = getattr(root_kv, key)
+                return value
+            except AttributeError:
+                pass
+        else:
+            msg = "There is no such key '%s'" % key
+            raise AttributeError(msg)
 
 
 def adapt_value(value, which_type):
@@ -154,5 +173,12 @@ def adapt_value(value, which_type):
         return which_type(value)
 
 
-consul = ConsulOptions()
-ConsulOptions.__global__ = consul
+def setup_consul(url=None, host=None, port=None, scheme=None):
+    options.__consul__.http.setup(url, host, port, scheme)
+
+
+options = ConsulOptions()
+ConsulOptions.__global__ = options
+
+
+__all__ = ['options', 'setup_consul', 'ConsulKV', 'CachedConsulKV']
