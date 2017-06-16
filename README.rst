@@ -1,14 +1,14 @@
 consul-options - Define and use your project settings without pain
 ===================================================================
 
-.. image:: https://travis-ci.org/Fatal1ty/aiofcm.svg?branch=master
-    :target: https://travis-ci.org/Fatal1ty/aiofcm
+.. image:: https://travis-ci.org/Fatal1ty/consul-options.svg?branch=master
+    :target: https://travis-ci.org/Fatal1ty/consul-options
 
-.. image:: https://img.shields.io/pypi/v/aiofcm.svg
-    :target: https://pypi.python.org/pypi/aiofcm
+.. image:: https://img.shields.io/pypi/v/consul-options.svg
+    :target: https://pypi.python.org/pypi/consul-options
 
-.. image:: https://img.shields.io/pypi/pyversions/aiofcm.svg
-    :target: https://pypi.python.org/pypi/aiofcm/
+.. image:: https://img.shields.io/pypi/pyversions/consul-options.svg
+    :target: https://pypi.python.org/pypi/consul-options/
 
 .. image:: https://img.shields.io/badge/License-Apache%202.0-blue.svg
     :target: https://opensource.org/licenses/Apache-2.0
@@ -58,21 +58,70 @@ Now you can access to the option values in a clear way:
 in Consul and later read them from there. So if anyone will change the value of *db/orders/host* key
 to something different in Consul then you will get that value.
 
+How project options stored in Consul
+------------------------------------
+
+When you declare a new class based on **consul_options.ConsulKV** default bahavior is
+creation a *folder* in Consul key/value storage with name of your class in lowercase.
+Each class attribute you define will have mapping to key *folder.key*.
+If you want to change this name you can use reserved class attribute **__key__** as shown below:
+
+.. code-block:: python
+
+    class WorkerOptions(ConsulKV):
+        __key__ = 'worker'
+
+        host = '127.0.0.1'
+        port = 80
+
+After that you can access to the option with "worker" in path:
+
+.. code-block:: python
+
+    from consul_options import options
+
+    print options.worker.host
+    print options.worker.port
+
+To create hierarchial key structure you can take advantage of usual class hierarchy:
+
+.. code-block:: python
+
+    from consul_options import ConsulKV, options
+
+    class WorkerOptions(ConsulKV):
+        __key__ = 'worker'
+
+        host = '127.0.0.1'
+        port = 80
+
+    class DB(WorkerOptions):
+        host = '127.0.0.1'
+        port = 5432
+        user = 'postgres'
+        password = 'postgres'
+
+    print options.worker.db.host  # 'host'
+    print options.worker.db.port  # 5432
+
+It is also possible to create keys at root level with class attribute **__root__**:
+
+.. code-block:: python
+
+    class RootOptions(ConsulKV):
+        __root__ = True
+
+        host = '127.0.0.1'
+        port = 80
+
+    print options.host
+    print options.port
+
 
 Compatibility
 -------------
 
 consul-options is compatible with both Python 2 and Python 3.
-
-
-Features
---------
-
-* Internal connection pool which adapts to the current load
-* Sending notification and/or data messages
-* Ability to set TTL (time to live) for messages
-* Ability to set priority for messages
-* Ability to set collapse-key for messages
 
 
 Installation
