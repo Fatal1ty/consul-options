@@ -61,7 +61,7 @@ to something different in Consul then you will get that value.
 How project options stored in Consul
 ------------------------------------
 
-When you declare a new class based on **consul_options.ConsulKV** default bahavior is
+When you declare a new class based on **ConsulKV** default bahavior is
 creation a *folder* in Consul key/value storage with name of your class in lowercase.
 Each class attribute you define will have mapping to key *folder.key*.
 If you want to change this name you can use reserved class attribute **__key__** as shown below:
