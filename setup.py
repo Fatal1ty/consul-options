@@ -2,10 +2,12 @@
 
 from setuptools import setup
 
+
 setup(
-    name='lazy-consul',
-    version='0.6',
-    description='Lazy client library for the Consul Key/Value store',
+    name='consul-options',
+    version='0.7',
+    description='Framework for using Consul as your project options storage',
+    long_description=open('README.rst').read(),
     platforms="all",
     classifiers=[
         'Intended Audience :: Developers',
@@ -15,10 +17,11 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Clustering',
     ],
-    license='MIT',
+    license='Apache License, Version 2.0',
     author='Alexander Tikhonov',
-    url='https://github.com/Fatal1ty/lazy-consul',
-    py_modules=['lazy_consul'],
+    author_email='random.gauss@gmail.com',
+    url='https://github.com/Fatal1ty/consul-options',
+    py_modules=['consul_options'],
     install_requires=[
         'python-consul',
         'six',
