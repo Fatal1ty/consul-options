@@ -16,7 +16,7 @@ consul-options - Define and use your project settings without pain
 
 How often do you wonder where to store the project settings? When your project is small
 it is not a big problem. But if your big project consists of dozens of microservices
-then there is the problem of centralized configuration management. The Сonsul have a key/value
+then there is a problem of centralized configuration management. The Сonsul have a key/value
 storage that is ideal for this.
 
 With **consul-options** you can define and use options in your code by a simple and elegant way.
@@ -45,7 +45,7 @@ Just take a look at the example:
 
         dbname = 'orders'
 
-Now you can access to the option values in a clear way:
+Now you can access option values in a clear way:
 
 .. code-block:: python
 
@@ -64,7 +64,8 @@ How project options stored in Consul
 When you declare a new class based on **ConsulKV** default bahavior is
 creation a *folder* in Consul key/value storage with name of your class in lowercase.
 Each class attribute you define will have mapping to key *folder.key*.
-If you want to change this name you can use reserved class attribute **__key__** as shown below:
+If you don't agree with generated folder name you are free to choose any other
+with reserved class attribute **__key__** as shown below:
 
 .. code-block:: python
 
