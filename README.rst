@@ -84,7 +84,7 @@ After that you can access to the option with "worker" in path:
     print options.worker.host
     print options.worker.port
 
-To create hierarchial key structure you can take advantage of usual class hierarchy:
+To create hierarchical key structure you can take advantage of usual class hierarchy:
 
 .. code-block:: python
 
