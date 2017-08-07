@@ -27,8 +27,8 @@ class LazyHTTPClient(HTTPClient):
 
 
 class LazyConsul(consul.base.Consul):
-    def connect(self, host, port, scheme, verify=True):
-        return LazyHTTPClient(host, port, scheme, verify)
+    def connect(self, host, port, scheme, verify=True, cert=None):
+        return LazyHTTPClient(host, port, scheme, verify, cert)
 
 
 class KeyValue(object):
