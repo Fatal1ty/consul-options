@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='consul-options',
-    version='0.8',
+    version='1.0',
     description='Framework for using Consul as your project options storage',
     long_description=open('README.rst').read(),
     platforms="all",
