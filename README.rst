@@ -63,7 +63,7 @@ How project options stored in Consul
 
 When you declare a new class based on **ConsulKV** default bahavior is
 creation a *folder* in Consul key/value storage with name of your class in lowercase.
-Each class attribute you define will have mapping to key *folder.key*.
+Each class attribute you define will have mapping to key *folder/key*.
 If you don't agree with generated folder name you are free to choose any other
 with reserved class attribute **__key__** as shown below:
 
