@@ -4,6 +4,10 @@ consul-options - Define and use your project settings without pain
 .. image:: https://travis-ci.org/Fatal1ty/consul-options.svg?branch=master
     :target: https://travis-ci.org/Fatal1ty/consul-options
 
+.. image:: https://requires.io/github/Fatal1ty/consul-options/requirements.svg?branch=master
+    :target: https://requires.io/github/Fatal1ty/consul-options/requirements/?branch=master
+    :alt: Requirements Status
+
 .. image:: https://img.shields.io/pypi/v/consul-options.svg
     :target: https://pypi.python.org/pypi/consul-options
 
