@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='consul-options',
-    version='1.0',
+    version='1.1',
     description='Framework for using Consul as your project options storage',
     long_description=open('README.rst').read(),
     platforms="all",
@@ -24,7 +24,7 @@ setup(
     url='https://github.com/Fatal1ty/consul-options',
     py_modules=['consul_options'],
     install_requires=[
-        'python-consul',
-        'six',
+        'python-consul==0.7.2',
+        'six==1.11.0',
     ]
 )
