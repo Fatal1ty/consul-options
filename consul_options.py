@@ -14,7 +14,7 @@ from six import with_metaclass
 class LazyHTTPClient(HTTPClient):
     def setup(self, url=None, host=None, port=None, scheme=None):
         if url:
-            o = urlparse(url)
+            o = urlparse(url.strip('/'))
             self.host = o.hostname
             self.port = o.port
             self.scheme = o.scheme
